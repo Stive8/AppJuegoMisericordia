@@ -9,10 +9,6 @@ import java.awt.event.ActionEvent;
 
 public class PanelGestionEmpleados extends javax.swing.JFrame {
 
-    /**
-     * Creates new form PanelGestionEmpleados
-     */
-
     DefaultTableModel modelo;
     public PanelGestionEmpleados() {
         initComponents();

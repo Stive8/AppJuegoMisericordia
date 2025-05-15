@@ -4,250 +4,184 @@ import JuegosMisericordia.model.Empleado;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.RandomAccessFile;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GestorAdministrador {
+    // Configuración de conexión a Oracle
+    private static final String JDBC_URL = "jdbc:oracle:thin:@192.168.1.142:1521:XE"; // Cambia según tu configuración
+    private static final String USER = "DAE2024";
+    private static final String PASSWORD = "DAE2024";
 
-    public static final int TAM_MAX_ID = 8;
-    public static final int TAM_MAX_USERNAME = 15;
-    public static final int TAM_MAX_PASSWORD = 15;
-    public static final int TAM_REGISTRO = (TAM_MAX_ID + TAM_MAX_USERNAME + TAM_MAX_PASSWORD + 8 + 10 + 6); //8 del salario(double), 10 del estado, 6 de los bytes extras
-    private String path = "data\\administrador.txt";
-
-
-    public String setTamanioID(String cadena) {
-        if (cadena.length() < TAM_MAX_ID) {
-            int espFaltantes = TAM_MAX_ID - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_ID) {
-            cadena = cadena.substring(0, TAM_MAX_ID);
-        }
-        return cadena;
-    }
-
-    public String setTamanioUsername(String cadena) {
-        if (cadena.length() < TAM_MAX_USERNAME) {
-            int espFaltantes = TAM_MAX_USERNAME - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_USERNAME) {
-            cadena = cadena.substring(0, TAM_MAX_USERNAME);
-        }
-        return cadena;
-    }
-
-    public String setTamanioPassword(String cadena) {
-        if (cadena.length() < TAM_MAX_PASSWORD) {
-            int espFaltantes = TAM_MAX_PASSWORD - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_PASSWORD) {
-            cadena = cadena.substring(0, TAM_MAX_PASSWORD);
-        }
-        return cadena;
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
     }
 
     public void addAdmin(Empleado administrador) {
-        RandomAccessFile fileAdmin = null;
-        try {
-            fileAdmin = new RandomAccessFile(path, "rw");
+        String sql = "INSERT INTO EMPLEADO (id, username, password, salario, estado, rol) VALUES (?, ?, ?, ?, ?, ?)";
 
-            fileAdmin.seek(fileAdmin.length());
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            if (administrador.getId().length() > TAM_MAX_ID) {
+            // Validaciones de longitud (opcional, también podrían hacerse en la BD)
+            if (administrador.getId().length() > 8) {
                 JOptionPane.showMessageDialog(null, "ID Demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
-            } else if (administrador.getUsername().length() > TAM_MAX_USERNAME) {
+            } else if (administrador.getUsername().length() > 15) {
                 JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
-            } else if (administrador.getPassword().length() > TAM_MAX_PASSWORD) {
+            } else if (administrador.getPassword().length() > 15) {
                 JOptionPane.showMessageDialog(null, "Contraseña demasiado larga (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            fileAdmin.writeUTF(setTamanioID(administrador.getId()));
-            fileAdmin.writeUTF(setTamanioUsername(administrador.getUsername()));
-            fileAdmin.writeUTF(setTamanioPassword(administrador.getPassword()));
-            fileAdmin.writeDouble(administrador.getSalario());
-            fileAdmin.writeUTF(administrador.getEstado());
+            stmt.setString(1, administrador.getId());
+            stmt.setString(2, administrador.getUsername());
+            stmt.setString(3, administrador.getPassword());
+            stmt.setDouble(4, administrador.getSalario());
+            stmt.setString(5, Empleado.ESTADO_ACTIVO);
+            stmt.setString(6, Empleado.ROL_ADMINISTRADOR);
 
-            fileAdmin.close();
+            int rowsInserted = stmt.executeUpdate();
 
-            JOptionPane.showMessageDialog(null, "Empleado registrado exitosamente", null, JOptionPane.INFORMATION_MESSAGE);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (rowsInserted > 0) {
+                JOptionPane.showMessageDialog(null, "Empleado registrado exitosamente", null, JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al registrar empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
     public void deleteAdmin(String idBorrar) {
-        RandomAccessFile fileAdmin = null;
-        try {
-            fileAdmin = new RandomAccessFile(path, "rw");
-            int cont = 0;
-            idBorrar = setTamanioID(idBorrar);
+        String sql = "UPDATE EMPLEADO SET estado = ? WHERE id = ? AND estado = ?";
 
-            while (true) {
-                String id = fileAdmin.readUTF();
-                fileAdmin.readUTF();
-                fileAdmin.readUTF();
-                fileAdmin.readDouble();
-                String estado = fileAdmin.readUTF();
-                cont++;
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if (idBorrar.equals(id) && estado.equals(Empleado.ESTADO_ACTIVO)) {
-                    fileAdmin.seek((TAM_REGISTRO * cont) - 10);
-                    fileAdmin.writeUTF(Empleado.ESTADO_INACTIVO);
-                    JOptionPane.showMessageDialog(null, "Empleado eliminado con éxito", null, JOptionPane.INFORMATION_MESSAGE);
-                    fileAdmin.close();
-                    return;
-                }
-                if (fileAdmin.getFilePointer() == fileAdmin.length()) {
-                    break;
-                }
+            stmt.setString(1, Empleado.ESTADO_INACTIVO);
+            stmt.setString(2, idBorrar);
+            stmt.setString(3, Empleado.ESTADO_ACTIVO);
+
+            int rowsUpdated = stmt.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                JOptionPane.showMessageDialog(null, "Empleado eliminado con éxito", null, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "No se encontró el empleado o ya estaba inactivo", "Advertencia", JOptionPane.WARNING_MESSAGE);
             }
-
-            fileAdmin.close();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
     public boolean verificarRegistro(String username, String password) {
-        RandomAccessFile fileAdmin = null;
-        String username2 = setTamanioUsername(username);
-        String password2 = setTamanioPassword(password);
-        String usernameLeido;
-        String passwordLeida;
-        String estado = "";
-        try {
-            fileAdmin = new RandomAccessFile(path, "rw");
+        String sql = "SELECT COUNT(*) FROM EMPLEADO WHERE username = ? AND password = ? AND estado = ?";
 
-            while (true) {
-                fileAdmin.readUTF();
-                usernameLeido = fileAdmin.readUTF();
-                passwordLeida = fileAdmin.readUTF();
-                fileAdmin.readDouble();
-                estado = fileAdmin.readUTF();
-                if (((usernameLeido.equals(username2)) && (passwordLeida.equals(password2))) && estado.equals(Empleado.ESTADO_ACTIVO)) {
-                    return true;
-                }
-                if (fileAdmin.getFilePointer() == fileAdmin.length()) {
-                    break;
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            stmt.setString(3, Empleado.ESTADO_ACTIVO);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
                 }
             }
-
-            fileAdmin.close();
-            return false;
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al verificar credenciales: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
+        return false;
     }
 
     public void editarRegistro(String idSeleccionada, String idNueva, String nombreNuevo, double salarioNuevo) {
-        RandomAccessFile fileAdmin = null;
+        String sql = "UPDATE EMPLEADO SET id = ?, username = ?, salario = ? WHERE id = ? AND estado = ?";
 
-        if (idNueva.length() > TAM_MAX_ID) {
-            JOptionPane.showMessageDialog(null, "ID demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        if (nombreNuevo.length() > TAM_MAX_USERNAME) {
-            JOptionPane.showMessageDialog(null, "Nombre demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        try {
-            fileAdmin = new RandomAccessFile(path, "rw");
-            String idLeida = "";
-            String passwordLeida = "";
-            String estadoLeido = "";
-
-            while (true) {
-                idLeida = fileAdmin.readUTF();
-                fileAdmin.readUTF();
-                passwordLeida = fileAdmin.readUTF();
-                fileAdmin.readDouble();
-                estadoLeido = fileAdmin.readUTF();
-
-                if ((idLeida.equals(idSeleccionada)) && (estadoLeido.equals(Empleado.ESTADO_ACTIVO))) {
-
-                    fileAdmin.seek(fileAdmin.getFilePointer() - TAM_REGISTRO);
-
-                    fileAdmin.writeUTF(setTamanioID(idNueva));
-                    fileAdmin.writeUTF(setTamanioUsername(nombreNuevo));
-                    fileAdmin.writeUTF(passwordLeida);
-                    fileAdmin.writeDouble(salarioNuevo);
-                    fileAdmin.writeUTF(estadoLeido);
-
-                    JOptionPane.showMessageDialog(null, "Cambio exitoso", null, JOptionPane.INFORMATION_MESSAGE);
-                    break;
-                }
+            // Validaciones de longitud
+            if (idNueva.length() > 8) {
+                JOptionPane.showMessageDialog(null, "ID demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (nombreNuevo.length() > 15) {
+                JOptionPane.showMessageDialog(null, "Nombre demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
+                return;
             }
 
-            fileAdmin.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            stmt.setString(1, idNueva);
+            stmt.setString(2, nombreNuevo);
+            stmt.setDouble(3, salarioNuevo);
+            stmt.setString(4, idSeleccionada);
+            stmt.setString(5, Empleado.ESTADO_ACTIVO);
+
+            int rowsUpdated = stmt.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                JOptionPane.showMessageDialog(null, "Cambio exitoso", null, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "No se encontró el empleado o está inactivo", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
     public boolean buscarAdmin(String id) {
-        RandomAccessFile fileAdmin = null;
-        id = setTamanioID(id);
-        String idLeida;
-        String estado = "";
-        try {
-            fileAdmin = new RandomAccessFile(path, "rw");
+        String sql = "SELECT username, salario FROM EMPLEADO WHERE id = ? AND estado = ?";
 
-            while (true) {
-                idLeida = fileAdmin.readUTF();
-                String nombre = fileAdmin.readUTF();
-                fileAdmin.readUTF();
-                double salario = fileAdmin.readDouble();
-                estado = fileAdmin.readUTF();
-                if (idLeida.equals(id) && estado.equals(Empleado.ESTADO_ACTIVO)) {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, id);
+            stmt.setString(2, Empleado.ESTADO_ACTIVO);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String nombre = rs.getString("username");
+                    double salario = rs.getDouble("salario");
                     JOptionPane.showMessageDialog(null, ("Nombre: " + nombre + "\n Salario: " + salario + "\n Rol: Empleado"));
-                    fileAdmin.close();
                     return true;
                 }
-                if (fileAdmin.getFilePointer() == fileAdmin.length()) {
-                    break;
-                }
             }
-
-            fileAdmin.close();
-            return false;
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al buscar empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
+        return false;
     }
 
     public void subirDatosATabla(DefaultTableModel modelo) {
-        RandomAccessFile fileAdmin = null;
-        try {
-            fileAdmin = new RandomAccessFile(path, "rw");
+        // Limpiar el modelo primero
+        modelo.setRowCount(0);
 
-            while (true) {
-                String id = fileAdmin.readUTF();
-                String nombre = fileAdmin.readUTF();
-                fileAdmin.readUTF(); //Lee la contraseña pero la pasa de largo
-                double salario = fileAdmin.readDouble();
-                String estado = fileAdmin.readUTF();
+        String sql = "SELECT id, username, salario FROM EMPLEADO WHERE estado = ? AND rol = ?";
 
-                if (estado.equals(Empleado.ESTADO_ACTIVO)) {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, Empleado.ESTADO_ACTIVO);
+            stmt.setString(2, Empleado.ROL_ADMINISTRADOR);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String id = rs.getString("id");
+                    String nombre = rs.getString("username");
+                    double salario = rs.getDouble("salario");
+
                     modelo.addRow(new Object[]{id, nombre, salario, "ADMINISTRADOR"});
                 }
-
-                if (fileAdmin.getFilePointer() == fileAdmin.length()) {
-                    break;
-                }
             }
-
-            fileAdmin.close();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
-
 }
