@@ -1,0 +1,8 @@
+package JuegosMisericordia.repository;
+
+import JuegosMisericordia.model.Cliente;
+import JuegosMisericordia.model.Producto;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ProductoRepository extends JpaRepository<Producto,Long > {
+}

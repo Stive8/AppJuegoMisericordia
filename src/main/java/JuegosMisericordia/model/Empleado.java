@@ -5,7 +5,6 @@ import lombok.*;
 
 @Entity
 @Table(name = "EMPLEADO")
-@Inheritance(strategy = InheritanceType.JOINED)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
