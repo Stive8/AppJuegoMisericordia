@@ -10,16 +10,11 @@ import lombok.*;
 @Table(name = "CLIENTE")
 public class Cliente {
 
-    @Id
-    private Long id;
 
+    @Id
     private String cedula;
     private String celular;
     private String correo;
 
-    public Cliente(String cedula, String celular, String correo) {
-        this.cedula = cedula;
-        this.celular = celular;
-        this.correo = correo;
-    }
+
 }

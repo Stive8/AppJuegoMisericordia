@@ -19,7 +19,7 @@ public class GestorProductos {
     }
 
     public void addProducto(Producto producto) {
-        String sql = "INSERT INTO PRODUCTO (CODIGO, NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES, ESTADO) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO PRODUCTO (CODIGO, NOMBRE, VALOR_UNITARIO, UNIDADES_DISPONIBLES, ESTADO) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -66,7 +66,7 @@ public class GestorProductos {
     public void subirDatosATabla(DefaultTableModel modelo) {
         modelo.setRowCount(0); // Limpiar la tabla antes de cargar datos
 
-        String sql = "SELECT CODIGO, NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES FROM PRODUCTO WHERE ESTADO = ?";
+        String sql = "SELECT CODIGO, NOMBRE, VALOR_UNITARIO, UNIDADES_DISPONIBLES FROM PRODUCTO WHERE ESTADO = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -78,8 +78,8 @@ public class GestorProductos {
                 modelo.addRow(new Object[]{
                         rs.getString("CODIGO"),
                         rs.getString("NOMBRE"),
-                        rs.getDouble("VALORUNITARIO"),
-                        rs.getInt("UNIDADESDISPONIBLES")
+                        rs.getDouble("VALOR_UNITARIO"),
+                        rs.getInt("UNIDADES_DISPONIBLES")
                 });
             }
         } catch (SQLException e) {
@@ -88,7 +88,7 @@ public class GestorProductos {
     }
 
     public void buscarProducto(String codigoABuscar) {
-        String sql = "SELECT NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
+        String sql = "SELECT NOMBRE, VALOR_UNITARIO, UNIDADES_DISPONIBLES FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -99,13 +99,13 @@ public class GestorProductos {
 
             if (rs.next()) {
                 String nombre = rs.getString("NOMBRE");
-                double valorUnitario = rs.getDouble("VALORUNITARIO");
-                int unidadesDisponibles = rs.getInt("UNIDADESDISPONIBLES");
+                double valorUnitario = rs.getDouble("VALOR_UNITARIO");
+                int UNIDADES_DISPONIBLES = rs.getInt("UNIDADES_DISPONIBLES");
 
                 JOptionPane.showMessageDialog(null,
                         "Nombre: " + nombre + "\n" +
                                 "Valor Unitario: " + valorUnitario + "\n" +
-                                "Unidades en Stock: " + unidadesDisponibles);
+                                "Unidades en Stock: " + UNIDADES_DISPONIBLES);
             } else {
                 JOptionPane.showMessageDialog(null, "Producto no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
             }
@@ -115,7 +115,7 @@ public class GestorProductos {
     }
 
     public Producto searchProducto(String codigoABuscar) {
-        String sql = "SELECT CODIGO, NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES, ESTADO FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
+        String sql = "SELECT CODIGO, NOMBRE, VALOR_UNITARIO, UNIDADES_DISPONIBLES, ESTADO FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -128,8 +128,8 @@ public class GestorProductos {
                 return new Producto(
                         rs.getString("CODIGO"),
                         rs.getString("NOMBRE"),
-                        rs.getDouble("VALORUNITARIO"),
-                        rs.getInt("UNIDADESDISPONIBLES"),
+                        rs.getDouble("VALOR_UNITARIO"),
+                        rs.getInt("UNIDADES_DISPONIBLES"),
                         rs.getString("ESTADO")
                 );
             } else {
@@ -142,7 +142,7 @@ public class GestorProductos {
     }
 
     public boolean comprobarDisponibilidad(int cantidad, String codigoAEditar) {
-        String sql = "SELECT UNIDADESDISPONIBLES FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
+        String sql = "SELECT UNIDADES_DISPONIBLES FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -152,7 +152,7 @@ public class GestorProductos {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                int stockActual = rs.getInt("UNIDADESDISPONIBLES");
+                int stockActual = rs.getInt("UNIDADES_DISPONIBLES");
                 return cantidad <= stockActual;
             }
             return false;
@@ -162,7 +162,7 @@ public class GestorProductos {
     }
 
     public void actualizarDatos(String codigoAEditar, String codigoNuevo, String nombreNuevo, double valorNuevo, int nuevoStock) {
-        String sql = "UPDATE PRODUCTO SET CODIGO = ?, NOMBRE = ?, VALORUNITARIO = ?, UNIDADESDISPONIBLES = ? WHERE CODIGO = ? AND ESTADO = ?";
+        String sql = "UPDATE PRODUCTO SET CODIGO = ?, NOMBRE = ?, VALOR_UNITARIO = ?, UNIDADES_DISPONIBLES = ? WHERE CODIGO = ? AND ESTADO = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -188,7 +188,7 @@ public class GestorProductos {
     }
 
     public void abastecerStock(int cantidad, String codigoAEditar) {
-        String sql = "UPDATE PRODUCTO SET UNIDADESDISPONIBLES = UNIDADESDISPONIBLES + ? WHERE CODIGO = ? AND ESTADO = ?";
+        String sql = "UPDATE PRODUCTO SET UNIDADES_DISPONIBLES = UNIDADES_DISPONIBLES + ? WHERE CODIGO = ? AND ESTADO = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -213,7 +213,7 @@ public class GestorProductos {
     }
 
     public void venderProducto(int cantidad, Producto producto) {
-        String sql = "UPDATE PRODUCTO SET UNIDADESDISPONIBLES = UNIDADESDISPONIBLES - ? WHERE CODIGO = ? AND ESTADO = ?";
+        String sql = "UPDATE PRODUCTO SET UNIDADES_DISPONIBLES = UNIDADES_DISPONIBLES - ? WHERE CODIGO = ? AND ESTADO = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
