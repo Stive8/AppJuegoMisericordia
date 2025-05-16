@@ -4,322 +4,226 @@ import JuegosMisericordia.model.Producto;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.RandomAccessFile;
+import java.sql.*;
+
 
 public class GestorProductos {
 
-    public static final int TAM_MAX_CODIGO = 8;
-    public static final int TAM_MAX_NOM = 30;
-    public static final int TAMANIO_REGISTRO = (TAM_MAX_CODIGO + TAM_MAX_NOM + 8 + 4 + 10 + 4);// 1
-    private final String path = "data\\producto.txt";
+    // Configuración de conexión a Oracle
+    private static final String JDBC_URL = "jdbc:oracle:thin:@192.168.1.142:1521:XE";
+    private static final String USER = "DAE2024";
+    private static final String PASSWORD = "DAE2024";
 
-
-    public String setTamanioCod(String cadena) {
-        if (cadena.length() < TAM_MAX_CODIGO) {
-            int espFaltantes = TAM_MAX_CODIGO - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_CODIGO) {
-            cadena = cadena.substring(0, TAM_MAX_CODIGO);
-        }
-        return cadena;
-    }
-
-    public String setTamanioNom(String cadena) {
-        if (cadena.length() < TAM_MAX_NOM) {
-            int espFaltantes = TAM_MAX_NOM - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_NOM) {
-            cadena = cadena.substring(0, TAM_MAX_NOM);
-        }
-        return cadena;
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
     }
 
     public void addProducto(Producto producto) {
-        RandomAccessFile fileProducto = null;
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
+        String sql = "INSERT INTO PRODUCTO (CODIGO, NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES, ESTADO) VALUES (?, ?, ?, ?, ?)";
 
-            fileProducto.seek(fileProducto.length());
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            if (producto.getCodigo().length() > TAM_MAX_CODIGO) {
-                JOptionPane.showMessageDialog(null, "Codigo demasiado largo (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-                return;
-            } else if (producto.getNombre().length() > TAM_MAX_NOM) {
-                JOptionPane.showMessageDialog(null, "Nombre del producto demasiado largo (Máx. 20 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-                return;
+            stmt.setString(1, producto.getCodigo());
+            stmt.setString(2, producto.getNombre());
+            stmt.setDouble(3, producto.getValorUnitario());
+            stmt.setInt(4, producto.getUnidadesDisponibles());
+            stmt.setString(5, Producto.ESTADO_ACTIVO);
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Producto añadido exitosamente", null, JOptionPane.INFORMATION_MESSAGE);
             }
-
-
-            fileProducto.writeUTF(setTamanioCod(producto.getCodigo()));
-            fileProducto.writeUTF(setTamanioNom(producto.getNombre()));
-            fileProducto.writeDouble(producto.getValorUnitario());
-            fileProducto.writeInt(producto.getUnidadesDisponibles());
-            fileProducto.writeUTF(producto.getEstado());
-
-            fileProducto.close();
-
-            JOptionPane.showMessageDialog(null, "Producto añadido exitosamente", null, JOptionPane.INFORMATION_MESSAGE);
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al añadir producto: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
     }
 
-    public void eliminarProducto(String codigoABorrar){
-        RandomAccessFile fileProducto = null;
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
-            int cont = 0;
-            String codigoLeido = "";
-            String estado = "";
+    public void eliminarProducto(String codigoABorrar) {
+        String sql = "UPDATE PRODUCTO SET ESTADO = ? WHERE CODIGO = ? AND ESTADO = ?";
 
-            while(true){
-                codigoLeido = fileProducto.readUTF();
-                fileProducto.readUTF();
-                fileProducto.readDouble();
-                fileProducto.readInt();
-                estado = fileProducto.readUTF();
-                cont++;
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if (codigoABorrar.trim().equals(codigoLeido.trim()) && estado.equals(Producto.ESTADO_ACTIVO)) {
-                    fileProducto.seek((TAMANIO_REGISTRO * cont) - 10);
-                    fileProducto.writeUTF(Producto.ESTADO_INACTIVO);
-                    JOptionPane.showMessageDialog(null, "Producto eliminado con éxito", null, JOptionPane.INFORMATION_MESSAGE);
-                    fileProducto.close();
-                    return;
-                }
-                if (fileProducto.getFilePointer() == fileProducto.length()) {
-                    break;
-                }
+            stmt.setString(1, Producto.ESTADO_INACTIVO);
+            stmt.setString(2, codigoABorrar);
+            stmt.setString(3, Producto.ESTADO_ACTIVO);
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Producto eliminado con éxito", null, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Producto no encontrado o ya inactivo", "Error", JOptionPane.WARNING_MESSAGE);
             }
-
-            fileProducto.close();
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void subirDatosATabla(DefaultTableModel modelo) {
-        RandomAccessFile fileProductos = null;
-        try {
-            fileProductos = new RandomAccessFile(path, "rw");
+        modelo.setRowCount(0); // Limpiar la tabla antes de cargar datos
 
-            while (true) {
-                String codigo = fileProductos.readUTF();
-                String nombre = fileProductos.readUTF();
-                double valorUnitario = fileProductos.readDouble();
-                int unidadesDisponibles = fileProductos.readInt();
-                String estado = fileProductos.readUTF();
+        String sql = "SELECT CODIGO, NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES FROM PRODUCTO WHERE ESTADO = ?";
 
-                if (estado.equals(Producto.ESTADO_ACTIVO)) {
-                    modelo.addRow(new Object[]{codigo, nombre, valorUnitario, unidadesDisponibles});
-                }
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if (fileProductos.getFilePointer() == fileProductos.length()) {
-                    break;
-                }
+            stmt.setString(1, Producto.ESTADO_ACTIVO);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                modelo.addRow(new Object[]{
+                        rs.getString("CODIGO"),
+                        rs.getString("NOMBRE"),
+                        rs.getDouble("VALORUNITARIO"),
+                        rs.getInt("UNIDADESDISPONIBLES")
+                });
             }
-
-            fileProductos.close();
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void buscarProducto(String codigoABuscar){
-        RandomAccessFile fileProducto = null;
-        codigoABuscar = setTamanioCod(codigoABuscar);
+    public void buscarProducto(String codigoABuscar) {
+        String sql = "SELECT NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
 
-        String estado = "";
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            while (true) {
-                String codigo = fileProducto.readUTF();
-                String nombre = fileProducto.readUTF();
-                double valorUnitario = fileProducto.readDouble();
-                int unidadesDisponibles = fileProducto.readInt();
-                estado = fileProducto.readUTF();
-                if (codigo.equals(codigoABuscar) && estado.equals(Producto.ESTADO_ACTIVO)) {
-                    JOptionPane.showMessageDialog(null, ("Nombre: "+nombre+"\n Valor Unitario: "+valorUnitario+"\n Unidades en Stock: " + unidadesDisponibles));
-                    fileProducto.close();
-                    return;
-                }
-                if(fileProducto.getFilePointer()== fileProducto.length()){
-                    break;
-                }
+            stmt.setString(1, codigoABuscar);
+            stmt.setString(2, Producto.ESTADO_ACTIVO);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String nombre = rs.getString("NOMBRE");
+                double valorUnitario = rs.getDouble("VALORUNITARIO");
+                int unidadesDisponibles = rs.getInt("UNIDADESDISPONIBLES");
+
+                JOptionPane.showMessageDialog(null,
+                        "Nombre: " + nombre + "\n" +
+                                "Valor Unitario: " + valorUnitario + "\n" +
+                                "Unidades en Stock: " + unidadesDisponibles);
+            } else {
+                JOptionPane.showMessageDialog(null, "Producto no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
             }
-
-            fileProducto.close();
-            JOptionPane.showMessageDialog(null, "Producto no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Producto searchProducto(String codigoABuscar){
-        RandomAccessFile fileProducto = null;
-        codigoABuscar = setTamanioCod(codigoABuscar);
+    public Producto searchProducto(String codigoABuscar) {
+        String sql = "SELECT CODIGO, NOMBRE, VALORUNITARIO, UNIDADESDISPONIBLES, ESTADO FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
 
-        String estado = "";
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            while (true) {
-                String codigo = fileProducto.readUTF();
-                String nombre = fileProducto.readUTF();
-                double valorUnitario = fileProducto.readDouble();
-                int unidadesDisponibles = fileProducto.readInt();
-                estado = fileProducto.readUTF();
-                if (codigo.trim().equals(codigoABuscar.trim()) && estado.equals(Producto.ESTADO_ACTIVO)) {
-                    fileProducto.close();
-                    return new Producto(codigo, nombre, valorUnitario,unidadesDisponibles,estado);
-                }
-                if(fileProducto.getFilePointer()== fileProducto.length()){
-                    break;
-                }
+            stmt.setString(1, codigoABuscar);
+            stmt.setString(2, Producto.ESTADO_ACTIVO);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Producto(
+                        rs.getString("CODIGO"),
+                        rs.getString("NOMBRE"),
+                        rs.getDouble("VALORUNITARIO"),
+                        rs.getInt("UNIDADESDISPONIBLES"),
+                        rs.getString("ESTADO")
+                );
+            } else {
+                JOptionPane.showMessageDialog(null, "Producto no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
+                return null;
             }
-
-            fileProducto.close();
-            JOptionPane.showMessageDialog(null, "Producto no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
-    public boolean comprobarDisponibilidad(int cantidad, String codigoAEditar){
-        RandomAccessFile fileProducto = null;
+    public boolean comprobarDisponibilidad(int cantidad, String codigoAEditar) {
+        String sql = "SELECT UNIDADESDISPONIBLES FROM PRODUCTO WHERE CODIGO = ? AND ESTADO = ?";
 
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
-            String codigoLeido = "";
-            int stockActual = 0;
-            while(true){
-                codigoLeido = fileProducto.readUTF();
-                fileProducto.readUTF();
-                fileProducto.readDouble();
-                stockActual = fileProducto.readInt();
-                String estado = fileProducto.readUTF();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if ((codigoLeido.trim().equals(codigoAEditar.trim()) && estado.equals(Producto.ESTADO_ACTIVO)) && (cantidad<=stockActual)) {
-                    fileProducto.close();
-                    return true;
-                }
-                if(fileProducto.getFilePointer()==fileProducto.length()){
-                    break;
-                }
+            stmt.setString(1, codigoAEditar);
+            stmt.setString(2, Producto.ESTADO_ACTIVO);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int stockActual = rs.getInt("UNIDADESDISPONIBLES");
+                return cantidad <= stockActual;
             }
-
-            fileProducto.close();
             return false;
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void actualizarDatos(String codigoAEditar, String codigoNuevo, String nombreNuevo, double valorNuevo, int nuevoStock){
-        RandomAccessFile fileProducto = null;
+    public void actualizarDatos(String codigoAEditar, String codigoNuevo, String nombreNuevo, double valorNuevo, int nuevoStock) {
+        String sql = "UPDATE PRODUCTO SET CODIGO = ?, NOMBRE = ?, VALORUNITARIO = ?, UNIDADESDISPONIBLES = ? WHERE CODIGO = ? AND ESTADO = ?";
 
-        if (codigoNuevo.length() > TAM_MAX_CODIGO) {
-            JOptionPane.showMessageDialog(null, "Código demasiado largo (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        if (nombreNuevo.length() > TAM_MAX_NOM) {
-            JOptionPane.showMessageDialog(null, "Nombre demasiado largo (Máx. 30 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
-            String codigoLeido;
-            while(true){
-                codigoLeido = fileProducto.readUTF();
-                fileProducto.readUTF();
-                fileProducto.readDouble();
-                fileProducto.readInt();
-                String estado = fileProducto.readUTF();
+            stmt.setString(1, codigoNuevo);
+            stmt.setString(2, nombreNuevo);
+            stmt.setDouble(3, valorNuevo);
+            stmt.setInt(4, nuevoStock);
+            stmt.setString(5, codigoAEditar);
+            stmt.setString(6, Producto.ESTADO_ACTIVO);
 
-                if (codigoLeido.trim().equals(codigoAEditar.trim()) && estado.equals(Producto.ESTADO_ACTIVO)) {
-                    fileProducto.seek(fileProducto.getFilePointer()-TAMANIO_REGISTRO);
-                    fileProducto.writeUTF(setTamanioCod(codigoNuevo));
-                    fileProducto.writeUTF(setTamanioNom(nombreNuevo));
-                    fileProducto.writeDouble(valorNuevo);
-                    fileProducto.writeInt(nuevoStock);
+            int affectedRows = stmt.executeUpdate();
 
-                    JOptionPane.showMessageDialog(null, "Cambio exitoso", null, JOptionPane.INFORMATION_MESSAGE);
-                    break;
-                }
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Cambio exitoso", null, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Producto no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
             }
-
-            fileProducto.close();
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
     }
 
-    public void abastecerStock(int cantidad, String codigoAEditar){
-        RandomAccessFile fileProducto = null;
+    public void abastecerStock(int cantidad, String codigoAEditar) {
+        String sql = "UPDATE PRODUCTO SET UNIDADESDISPONIBLES = UNIDADESDISPONIBLES + ? WHERE CODIGO = ? AND ESTADO = ?";
 
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
-            String codigoLeido;
-            int stockActual = 0;
-            while(true){
-                codigoLeido = fileProducto.readUTF();
-                fileProducto.readUTF();
-                fileProducto.readDouble();
-                stockActual = fileProducto.readInt();
-                String estado = fileProducto.readUTF();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if (codigoLeido.trim().equals(codigoAEditar.trim()) && estado.equals(Producto.ESTADO_ACTIVO)) {
-                    stockActual += cantidad;
-                    fileProducto.seek(fileProducto.getFilePointer()-10-4);
-                    fileProducto.writeInt(stockActual);
+            stmt.setInt(1, cantidad);
+            stmt.setString(2, codigoAEditar);
+            stmt.setString(3, Producto.ESTADO_ACTIVO);
 
-                    JOptionPane.showMessageDialog(null, ("Producto abastecido con éxito \n Nuevo stock: " + stockActual), null, JOptionPane.INFORMATION_MESSAGE);
-                    break;
-                }
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                Producto p = searchProducto(codigoAEditar);
+                JOptionPane.showMessageDialog(null,
+                        "Producto abastecido con éxito \nNuevo stock: " + p.getUnidadesDisponibles(),
+                        null, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Producto no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
             }
-
-            fileProducto.close();
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void venderProducto(int cantidad, Producto producto){
-        RandomAccessFile fileProducto = null;
+    public void venderProducto(int cantidad, Producto producto) {
+        String sql = "UPDATE PRODUCTO SET UNIDADESDISPONIBLES = UNIDADESDISPONIBLES - ? WHERE CODIGO = ? AND ESTADO = ?";
 
-        try {
-            fileProducto = new RandomAccessFile(path, "rw");
-            String codigo = producto.getCodigo();
-            int stockActual = 0;
-            while(true){
-                String codigoLeido = fileProducto.readUTF();
-                fileProducto.readUTF();
-                fileProducto.readDouble();
-                stockActual = fileProducto.readInt();
-                String estado = fileProducto.readUTF();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if (codigoLeido.trim().equals(codigo.trim()) && estado.equals(Producto.ESTADO_ACTIVO)) {
-                    stockActual -= cantidad;
-                    fileProducto.seek(fileProducto.getFilePointer()-10-4);
-                    fileProducto.writeInt(stockActual);
-                    break;
-                }
-            }
+            stmt.setInt(1, cantidad);
+            stmt.setString(2, producto.getCodigo());
+            stmt.setString(3, Producto.ESTADO_ACTIVO);
 
-            fileProducto.close();
-
-        } catch (Exception e) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

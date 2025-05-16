@@ -4,245 +4,189 @@ import JuegosMisericordia.model.Empleado;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.RandomAccessFile;
+import java.sql.*;
 
 public class GestorVendedor {
 
-    public static final int TAM_MAX_ID = 8;
-    public static final int TAM_MAX_USERNAME = 15;
-    public static final int TAM_MAX_PASSWORD = 15;
-    public static final int TAM_REGISTRO = (TAM_MAX_ID + TAM_MAX_USERNAME + TAM_MAX_PASSWORD + 8 + 10 + 6); //8 del salario(double), 10 del estado, 6 de los bytes extras
-    private String path = "data\\vendedor.txt";
+    // Configuración de conexión a Oracle (usando las mismas credenciales que GestorProductos)
+    private static final String JDBC_URL = "jdbc:oracle:thin:@192.168.1.142:1521:XE";
+    private static final String USER = "DAE2024";
+    private static final String PASSWORD = "DAE2024";
 
-    public String setTamanioID(String cadena) {
-        if (cadena.length() < TAM_MAX_ID) {
-            int espFaltantes = TAM_MAX_ID - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_ID) {
-            cadena = cadena.substring(0, TAM_MAX_ID);
-        }
-        return cadena;
-    }
-    public String setTamanioUsername(String cadena) {
-        if (cadena.length() < TAM_MAX_USERNAME) {
-            int espFaltantes = TAM_MAX_USERNAME - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_USERNAME) {
-            cadena = cadena.substring(0, TAM_MAX_USERNAME);
-        }
-        return cadena;
-    }
-    public String setTamanioPassword(String cadena) {
-        if (cadena.length() < TAM_MAX_PASSWORD) {
-            int espFaltantes = TAM_MAX_PASSWORD - cadena.length();
-            cadena = cadena + " ".repeat(espFaltantes);
-        } else if (cadena.length() > TAM_MAX_PASSWORD) {
-            cadena = cadena.substring(0, TAM_MAX_PASSWORD);
-        }
-        return cadena;
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
     }
 
     public void addSeller(Empleado vendedor) {
-        RandomAccessFile fileSeller = null;
-        try {
-            fileSeller = new RandomAccessFile(path, "rw");
+        String sql = "INSERT INTO EMPLEADO (ID, USERNAME, PASSWORD, SALARIO, ESTADO, ROL) VALUES (?, ?, ?, ?, ?, ?)";
 
-            fileSeller.seek(fileSeller.length());
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            if(vendedor.getId().length()>TAM_MAX_ID){
-                JOptionPane.showMessageDialog(null, "ID Demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.INFORMATION_MESSAGE);
+            // Validaciones de longitud
+            if(vendedor.getId().length() > 8) {
+                JOptionPane.showMessageDialog(null, "ID demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
-            }else if(vendedor.getUsername().length()>TAM_MAX_USERNAME){
-                JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.INFORMATION_MESSAGE);
+            }
+            if(vendedor.getUsername().length() > 15) {
+                JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
-            } else if(vendedor.getPassword().length()>TAM_MAX_PASSWORD){
-                JOptionPane.showMessageDialog(null, "Contraseña demasiado larga (Máx. 15 caracteres)", "Error", JOptionPane.INFORMATION_MESSAGE);
+            }
+            if(vendedor.getPassword().length() > 15) {
+                JOptionPane.showMessageDialog(null, "Contraseña demasiado larga (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            fileSeller.writeUTF(setTamanioID(vendedor.getId()));
-            fileSeller.writeUTF(setTamanioUsername(vendedor.getUsername()));
-            fileSeller.writeUTF(setTamanioPassword(vendedor.getPassword()));
-            fileSeller.writeDouble(vendedor.getSalario());
-            fileSeller.writeUTF(vendedor.getEstado());
+            stmt.setString(1, vendedor.getId());
+            stmt.setString(2, vendedor.getUsername());
+            stmt.setString(3, vendedor.getPassword());
+            stmt.setDouble(4, vendedor.getSalario());
+            stmt.setString(5, Empleado.ESTADO_ACTIVO);
+            stmt.setString(6, Empleado.ROL_VENDEDOR);
 
-            fileSeller.close();
+            int affectedRows = stmt.executeUpdate();
 
-            JOptionPane.showMessageDialog(null, "Empleado registrado exitosamente", null, JOptionPane.INFORMATION_MESSAGE);
-
-        } catch (Exception e) {
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Vendedor registrado exitosamente", null, JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al registrar vendedor: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
     }
 
-    public void deleteSeller(String idBorrar){
-        RandomAccessFile fileSeller = null;
-        try {
-            fileSeller = new RandomAccessFile(path, "rw");
-            int cont = 0;
-            idBorrar = setTamanioID(idBorrar);
+    public void deleteSeller(String idBorrar) {
+        String sql = "UPDATE EMPLEADO SET ESTADO = ? WHERE ID = ? AND ESTADO = ? AND ROL = ?";
 
-            while (true) {
-                String id = fileSeller.readUTF();
-                fileSeller.readUTF();
-                fileSeller.readUTF();
-                fileSeller.readDouble();
-                String estado = fileSeller.readUTF();
-                cont++;
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if (idBorrar.equals(id)) {
-                    fileSeller.seek((TAM_REGISTRO * cont) - 10);
-                    fileSeller.writeUTF(Empleado.ESTADO_INACTIVO);
-                    JOptionPane.showMessageDialog(null, "Empleado eliminado con éxito", null, JOptionPane.INFORMATION_MESSAGE);
-                    fileSeller.close();
-                    return;
-                }
-                if(fileSeller.getFilePointer()==fileSeller.length()){
-                    break;
-                }
+            stmt.setString(1, Empleado.ESTADO_INACTIVO);
+            stmt.setString(2, idBorrar);
+            stmt.setString(3, Empleado.ESTADO_ACTIVO);
+            stmt.setString(4, Empleado.ROL_VENDEDOR);
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Vendedor eliminado con éxito", null, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Vendedor no encontrado o ya inactivo", "Error", JOptionPane.WARNING_MESSAGE);
             }
-
-            fileSeller.close();
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public boolean buscarSeller(String id) {
-        RandomAccessFile fileSeller = null;
-        id = setTamanioID(id);
-        String idLeida;
-        String estado = "";
-        try {
-            fileSeller = new RandomAccessFile(path, "rw");
+        String sql = "SELECT USERNAME, SALARIO FROM EMPLEADO WHERE ID = ? AND ESTADO = ? AND ROL = ?";
 
-            while (true) {
-                idLeida = fileSeller.readUTF();
-                String nombre = fileSeller.readUTF();
-                fileSeller.readUTF();
-                double salario = fileSeller.readDouble();
-                estado = fileSeller.readUTF();
-                if (idLeida.equals(id) && estado.equals(Empleado.ESTADO_ACTIVO)) {
-                    JOptionPane.showMessageDialog(null, ("Nombre: "+nombre+"\n Salario: "+salario+"\n Rol: Empleado"));
-                    fileSeller.close();
-                    return true;
-                }
-                if(fileSeller.getFilePointer()== fileSeller.length()){
-                    break;
-                }
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, id);
+            stmt.setString(2, Empleado.ESTADO_ACTIVO);
+            stmt.setString(3, Empleado.ROL_VENDEDOR);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String nombre = rs.getString("USERNAME");
+                double salario = rs.getDouble("SALARIO");
+
+                JOptionPane.showMessageDialog(null,
+                        "Nombre: " + nombre + "\n" +
+                                "Salario: " + salario + "\n" +
+                                "Rol: Vendedor");
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(null, "Vendedor no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
+                return false;
             }
-
-            fileSeller.close();
-            JOptionPane.showMessageDialog(null, "Empleado no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
-            return false;
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void editarRegistro(String idSeleccionada, String idNueva, String nombreNuevo, double salarioNuevo) {
-        RandomAccessFile fileSeller = null;
-
-        if (idNueva.length() > TAM_MAX_ID) {
+        // Validaciones de longitud
+        if (idNueva.length() > 8) {
             JOptionPane.showMessageDialog(null, "ID demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (nombreNuevo.length() > TAM_MAX_USERNAME) {
+        if (nombreNuevo.length() > 15) {
             JOptionPane.showMessageDialog(null, "Nombre demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        try {
-            fileSeller = new RandomAccessFile(path, "rw");
-            String idLeida = "";
-            String passwordLeida = "";
-            String estadoLeido = "";
+        String sql = "UPDATE EMPLEADO SET ID = ?, USERNAME = ?, SALARIO = ? WHERE ID = ? AND ESTADO = ? AND ROL = ?";
 
-            while (true) {
-                idLeida = fileSeller.readUTF();
-                fileSeller.readUTF();
-                passwordLeida = fileSeller.readUTF();
-                fileSeller.readDouble();
-                estadoLeido = fileSeller.readUTF();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if ((idLeida.equals(idSeleccionada)) && (estadoLeido.equals(Empleado.ESTADO_ACTIVO))) {
+            stmt.setString(1, idNueva);
+            stmt.setString(2, nombreNuevo);
+            stmt.setDouble(3, salarioNuevo);
+            stmt.setString(4, idSeleccionada);
+            stmt.setString(5, Empleado.ESTADO_ACTIVO);
+            stmt.setString(6, Empleado.ROL_VENDEDOR);
 
-                    fileSeller.seek(fileSeller.getFilePointer() - TAM_REGISTRO);
+            int affectedRows = stmt.executeUpdate();
 
-                    fileSeller.writeUTF(setTamanioID(idNueva));
-                    fileSeller.writeUTF(setTamanioUsername(nombreNuevo));
-                    fileSeller.writeUTF(passwordLeida);
-                    fileSeller.writeDouble(salarioNuevo);
-                    fileSeller.writeUTF(estadoLeido);
-
-                    JOptionPane.showMessageDialog(null, "Cambio exitoso", null, JOptionPane.INFORMATION_MESSAGE);
-                    break;
-                }
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Cambio exitoso", null, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Vendedor no encontrado", "Error", JOptionPane.WARNING_MESSAGE);
             }
-
-            fileSeller.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
     }
 
     public boolean verificarRegistro(String username, String password) {
-        RandomAccessFile fileSeller = null;
-        String username2 = setTamanioUsername(username);
-        String password2 = setTamanioPassword(password);
-        String usernameLeido;
-        String passwordLeida;
-        try {
-            fileSeller = new RandomAccessFile(path, "rw");
+        String sql = "SELECT COUNT(*) FROM EMPLEADO WHERE USERNAME = ? AND PASSWORD = ? AND ESTADO = ? AND ROL = ?";
 
-            while (true) {
-                fileSeller.readUTF();
-                usernameLeido = fileSeller.readUTF();
-                passwordLeida = fileSeller.readUTF();
-                fileSeller.readDouble();
-                fileSeller.readUTF();
-                if ((usernameLeido.equals(username2)) && (passwordLeida.equals(password2))) {
-                    return true;
-                }
-                if(fileSeller.getFilePointer()== fileSeller.length()){
-                    break;
-                }
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            stmt.setString(3, Empleado.ESTADO_ACTIVO);
+            stmt.setString(4, Empleado.ROL_VENDEDOR);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
-
-            fileSeller.close();
             return false;
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void subirDatosATabla(DefaultTableModel modelo){
-        RandomAccessFile fileSeller = null;
-        try {
-            fileSeller = new RandomAccessFile(path, "rw");
+    public void subirDatosATabla(DefaultTableModel modelo) {
+        modelo.setRowCount(0); // Limpiar la tabla antes de cargar datos
 
-            while(true){
-                String id = fileSeller.readUTF();
-                String nombre = fileSeller.readUTF();
-                fileSeller.readUTF(); //Lee la contraseña pero la pasa de largo
-                double salario = fileSeller.readDouble();
-                String estado = fileSeller.readUTF();
+        String sql = "SELECT ID, USERNAME, SALARIO FROM EMPLEADO WHERE ESTADO = ? AND ROL = ?";
 
-                if(estado.equals(Empleado.ESTADO_ACTIVO)){
-                    modelo.addRow(new Object[]{id, nombre, salario, "VENDEDOR"});
-                }
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if(fileSeller.getFilePointer()== fileSeller.length()){
-                    break;
-                }
+            stmt.setString(1, Empleado.ESTADO_ACTIVO);
+            stmt.setString(2, Empleado.ROL_VENDEDOR);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                modelo.addRow(new Object[]{
+                        rs.getString("ID"),
+                        rs.getString("USERNAME"),
+                        rs.getDouble("SALARIO"),
+                        "VENDEDOR"
+                });
             }
-
-            fileSeller.close();
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
