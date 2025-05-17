@@ -512,29 +512,29 @@ public class InterfazVentas extends javax.swing.JFrame {
         GestorProductos gestorProductos = new GestorProductos();
         GestorVentas gestorVentas = new GestorVentas();
 
-        int i = 0;
-        for (Producto producto : productosAVender) {
-            gestorProductos.venderProducto(cantidadesAVender.get(i), producto);
-            i++;
-        }
-
-        // Crear objeto Venta
+        // Crear y configurar la venta principal
         Venta venta = new Venta();
-        venta.setNumeroVenta(Integer.parseInt(numField.getText()));
+        venta.setNumeroVenta(gestorVentas.generarSiguienteNumeroVenta());
         venta.setFechaHora(LocalDateTime.now());
 
-        // ⚠️ Aquí debes tener una referencia al Empleado que está logueado
         Empleado vendedor = new Empleado();
-        vendedor.setId(this.loggedSeller); // <- loggedSeller debería ser un ID numérico en String
+        vendedor.setId(this.loggedSeller);
         venta.setVendedor(vendedor);
 
-        venta.setTipoPago((this.tipoPago));
+        venta.setTipoPago(this.tipoPago);
         venta.setMontoTotal(this.valorTotal);
         venta.setCambio(this.cambio);
 
-        gestorVentas.guardarVenta(venta);
+        // Guardar venta con sus detalles
+        gestorVentas.guardarVentaConDetalles(venta, productosAVender, cantidadesAVender);
 
-        JOptionPane.showMessageDialog(null, "Venta realizada con éxito", null, JOptionPane.INFORMATION_MESSAGE);
+        // Actualizar stock de productos
+        for (int i = 0; i < productosAVender.size(); i++) {
+            gestorProductos.venderProducto(cantidadesAVender.get(i), productosAVender.get(i));
+        }
+
+        JOptionPane.showMessageDialog(null, "Venta registrada exitosamente",
+                "Éxito", JOptionPane.INFORMATION_MESSAGE);
     }
 
 

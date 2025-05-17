@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "VENTA")
@@ -13,21 +15,29 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Venta {
-
     @Id
-    private int numeroVenta;  // Generado manualmente desde Java
+    @Column(name = "NUMERO_VENTA")
+    private Integer numeroVenta;
 
+    @Column(name = "FECHA_HORA", nullable = false)
     private LocalDateTime fechaHora;
 
     @ManyToOne
-    @JoinColumn(name = "vendedor_id", nullable = false)
+    @JoinColumn(name = "VENDEDOR_ID", referencedColumnName = "ID")
     private Empleado vendedor;
 
-    @Column(nullable = false)
+    @Column(name = "TIPO_PAGO", nullable = false)
     private String tipoPago;
 
-    @Column(nullable = false)
-    private double montoTotal;
+    @Column(name = "MONTO_TOTAL", nullable = false)
+    private Double montoTotal;
 
-    private double cambio;
+    @Column(name = "CAMBIO")
+    private Double cambio;
+
+    @Column(name = "REEMBOLSADO", nullable = false)
+    private String reembolsado = "NO"; // Valor por defecto
+
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleVenta> detalles = new ArrayList<>();
 }
