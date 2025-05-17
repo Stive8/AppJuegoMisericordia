@@ -7,6 +7,7 @@ package JuegosMisericordia.ui;
 
 
 import JuegosMisericordia.ui.gestionProductos.PanelGestionInventario;
+import JuegosMisericordia.ui.informes.InterfazInformes;
 
 import javax.swing.*;
 
@@ -20,6 +21,9 @@ public class PanelAdmin extends javax.swing.JFrame {
      */
     public PanelAdmin() {
         initComponents();
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+        this.setResizable(false);
     }
 
     /**
@@ -33,50 +37,23 @@ public class PanelAdmin extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        buttonLogOut = new javax.swing.JButton();
-        buttonGestionEmpleados = new javax.swing.JButton();
         buttonGestionInventario = new javax.swing.JButton();
+        buttonGenerarInformes = new javax.swing.JButton();
+        buttonGestionEmpleados = new javax.swing.JButton();
+        buttonLogOut = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(800, 500));
-        getContentPane().setLayout(null);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel1.setForeground(new java.awt.Color(0, 102, 102));
-        jPanel1.setMaximumSize(new java.awt.Dimension(800, 500));
-        jPanel1.setMinimumSize(new java.awt.Dimension(800, 500));
         jPanel1.setPreferredSize(new java.awt.Dimension(800, 500));
         jPanel1.setLayout(null);
 
         jLabel1.setFont(new java.awt.Font("Eras Demi ITC", 1, 32)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(0, 0, 0));
-        jLabel1.setText("Bienvenido, administrador.");
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Bienvenido, seleccione una opción.");
         jPanel1.add(jLabel1);
-        jLabel1.setBounds(170, 30, 440, 37);
-
-        buttonLogOut.setBackground(new java.awt.Color(0, 102, 102));
-        buttonLogOut.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        buttonLogOut.setForeground(new java.awt.Color(255, 255, 255));
-        buttonLogOut.setText("Cerrar Sesión");
-        buttonLogOut.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonLogOutActionPerformed(evt);
-            }
-        });
-        jPanel1.add(buttonLogOut);
-        buttonLogOut.setBounds(550, 410, 222, 34);
-
-        buttonGestionEmpleados.setBackground(new java.awt.Color(204, 204, 204));
-        buttonGestionEmpleados.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        buttonGestionEmpleados.setForeground(new java.awt.Color(0, 0, 0));
-        buttonGestionEmpleados.setText("Gestionar Empleados");
-        buttonGestionEmpleados.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonGestionEmpleadosActionPerformed(evt);
-            }
-        });
-        jPanel1.add(buttonGestionEmpleados);
-        buttonGestionEmpleados.setBounds(250, 140, 260, 80);
+        jLabel1.setBounds(80, 50, 630, 37);
 
         buttonGestionInventario.setBackground(new java.awt.Color(204, 204, 204));
         buttonGestionInventario.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
@@ -88,13 +65,68 @@ public class PanelAdmin extends javax.swing.JFrame {
             }
         });
         jPanel1.add(buttonGestionInventario);
-        buttonGestionInventario.setBounds(250, 250, 260, 80);
+        buttonGestionInventario.setBounds(260, 120, 260, 80);
 
-        getContentPane().add(jPanel1);
-        jPanel1.setBounds(0, 0, 840, 500);
+        buttonGenerarInformes.setBackground(new java.awt.Color(204, 204, 204));
+        buttonGenerarInformes.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        buttonGenerarInformes.setForeground(new java.awt.Color(0, 0, 0));
+        buttonGenerarInformes.setText("Generar Informes");
+        buttonGenerarInformes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonGenerarInformesActionPerformed(evt);
+            }
+        });
+        jPanel1.add(buttonGenerarInformes);
+        buttonGenerarInformes.setBounds(260, 320, 260, 80);
+
+        buttonGestionEmpleados.setBackground(new java.awt.Color(204, 204, 204));
+        buttonGestionEmpleados.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        buttonGestionEmpleados.setForeground(new java.awt.Color(0, 0, 0));
+        buttonGestionEmpleados.setText("Gestionar Empleados");
+        buttonGestionEmpleados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonGestionEmpleadosActionPerformed(evt);
+            }
+        });
+        jPanel1.add(buttonGestionEmpleados);
+        buttonGestionEmpleados.setBounds(260, 220, 260, 80);
+
+        buttonLogOut.setBackground(new java.awt.Color(0, 102, 102));
+        buttonLogOut.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        buttonLogOut.setForeground(new java.awt.Color(255, 255, 255));
+        buttonLogOut.setText("Cerrar Sesión");
+        buttonLogOut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonLogOutActionPerformed(evt);
+            }
+        });
+        jPanel1.add(buttonLogOut);
+        buttonLogOut.setBounds(540, 440, 222, 34);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        jPanel1.getAccessibleContext().setAccessibleDescription("");
 
         pack();
     }// </editor-fold>
+
+    private void buttonGenerarInformesActionPerformed(java.awt.event.ActionEvent evt) {
+        InterfazInformes interfazInformes = new InterfazInformes();
+        this.dispose();
+    }
 
     private void buttonLogOutActionPerformed(java.awt.event.ActionEvent evt) {
         int confirmacion = JOptionPane.showConfirmDialog(null, "¿Está seguro de que desea cerrar sesión?", "Cerrar Sesión", JOptionPane.YES_NO_OPTION);
@@ -152,6 +184,7 @@ public class PanelAdmin extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify
+    private javax.swing.JButton buttonGenerarInformes;
     private javax.swing.JButton buttonGestionEmpleados;
     private javax.swing.JButton buttonGestionInventario;
     private javax.swing.JButton buttonLogOut;
