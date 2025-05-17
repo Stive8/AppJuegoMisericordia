@@ -47,7 +47,7 @@ public class GestorVentas {
 
     private void guardarVenta(Connection conn, Venta venta) throws SQLException {
 
-        String empleadoId = obtenerIdEmpleadoPorUsername(venta.getVendedor().getId());
+        String empleadoId = obtenerIdEmpleadoPorUsername(String.valueOf(venta.getVendedor().getId()));
 
         String sql = "INSERT INTO VENTA (NUMERO_VENTA, FECHA_HORA, VENDEDOR_ID, TIPO_PAGO, MONTO_TOTAL, CAMBIO) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
@@ -248,7 +248,7 @@ public class GestorVentas {
                 venta.setCambio(rs.getDouble("CAMBIO"));
 
                 Empleado vendedor = new Empleado();
-                vendedor.setId(rs.getString("VENDEDOR_ID"));
+                vendedor.setId(Long.valueOf(rs.getString("VENDEDOR_ID")));
                 vendedor.setUsername(rs.getString("USERNAME"));
                 venta.setVendedor(vendedor);
 

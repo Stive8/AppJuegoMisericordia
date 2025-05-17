@@ -16,7 +16,9 @@ public class Empleado {
     public static final String ROL_VENDEDOR = "VENDEDOR";
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
+    private Long id;  // ID numérico autoincremental
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -25,4 +27,13 @@ public class Empleado {
     private double salario;
     private String estado;
     private String rol;
+
+    // Constructor sin el parámetro ID
+    public Empleado(String username, String password, double salario, String estado, String rol) {
+        this.username = username;
+        this.password = password;
+        this.salario = salario;
+        this.estado = estado;
+        this.rol = rol;
+    }
 }

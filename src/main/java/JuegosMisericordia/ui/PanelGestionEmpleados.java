@@ -248,10 +248,10 @@ public class PanelGestionEmpleados extends javax.swing.JFrame {
             int confirmacion = JOptionPane.showConfirmDialog(null, ("¿Está seguro de que desea eliminar al empleado de id "+ id + "?"), null, JOptionPane.YES_NO_OPTION);
             if (confirmacion == JOptionPane.YES_OPTION) {
                 if(rol.equals("ADMINISTRADOR")){
-                    gestorAdministrador.deleteAdmin(id);
+                    gestorAdministrador.deleteAdmin(Long.valueOf(id));
                 }
                 if(rol.equals("VENDEDOR")){
-                    gestorVendedor.deleteSeller(id);
+                    gestorVendedor.deleteSeller(Long.valueOf(id));
                 }
             }
 
@@ -267,8 +267,8 @@ public class PanelGestionEmpleados extends javax.swing.JFrame {
         GestorAdministrador gestAdmin = new GestorAdministrador();
         GestorVendedor gestVen = new GestorVendedor();
         String id = JOptionPane.showInputDialog("Ingrese la ID del empleado a buscar");
-        if (!gestAdmin.buscarAdmin(id)) {
-            gestVen.buscarSeller(id);
+        if (!gestAdmin.buscarAdmin(Long.valueOf(id))) {
+            gestVen.buscarSeller(Long.valueOf(id));
         }
     }
 

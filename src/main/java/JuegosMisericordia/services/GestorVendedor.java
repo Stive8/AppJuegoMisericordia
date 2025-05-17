@@ -20,16 +20,12 @@ public class GestorVendedor {
     }
 
     public void addSeller(Empleado vendedor) {
-        String sql = "INSERT INTO EMPLEADO (ID, USERNAME, PASSWORD, SALARIO, ESTADO, ROL) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO EMPLEADO (USERNAME, PASSWORD, SALARIO, ESTADO, ROL) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            // Validaciones de longitud
-            if(vendedor.getId().length() > 8) {
-                JOptionPane.showMessageDialog(null, "ID demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+            // Validaciones de longitud (solo para username y password)
             if(vendedor.getUsername().length() > 15) {
                 JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -39,17 +35,21 @@ public class GestorVendedor {
                 return;
             }
 
-            stmt.setString(1, vendedor.getId());
-            stmt.setString(2, vendedor.getUsername());
-            stmt.setString(3, vendedor.getPassword());
-            stmt.setDouble(4, vendedor.getSalario());
-            stmt.setString(5, Empleado.ESTADO_ACTIVO);
-            stmt.setString(6, Empleado.ROL_VENDEDOR);
+            stmt.setString(1, vendedor.getUsername());
+            stmt.setString(2, vendedor.getPassword());
+            stmt.setDouble(3, vendedor.getSalario());
+            stmt.setString(4, Empleado.ESTADO_ACTIVO);
+            stmt.setString(5, Empleado.ROL_VENDEDOR);
 
             int affectedRows = stmt.executeUpdate();
 
             if (affectedRows > 0) {
-                JOptionPane.showMessageDialog(null, "Vendedor registrado exitosamente", null, JOptionPane.INFORMATION_MESSAGE);
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        vendedor.setId(generatedKeys.getLong(1));
+                    }
+                }
+                JOptionPane.showMessageDialog(null, "Vendedor registrado exitosamente con ID: " + vendedor.getId(), null, JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al registrar vendedor: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -57,14 +57,14 @@ public class GestorVendedor {
         }
     }
 
-    public void deleteSeller(String idBorrar) {
+    public void deleteSeller(Long idBorrar) {  // Cambiar parámetro a Long
         String sql = "UPDATE EMPLEADO SET ESTADO = ? WHERE ID = ? AND ESTADO = ? AND ROL = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, Empleado.ESTADO_INACTIVO);
-            stmt.setString(2, idBorrar);
+            stmt.setLong(2, idBorrar);  // Cambiar a setLong
             stmt.setString(3, Empleado.ESTADO_ACTIVO);
             stmt.setString(4, Empleado.ROL_VENDEDOR);
 
@@ -80,13 +80,13 @@ public class GestorVendedor {
         }
     }
 
-    public boolean buscarSeller(String id) {
+    public boolean buscarSeller(Long id) {  // Cambiar parámetro a Long
         String sql = "SELECT USERNAME, SALARIO FROM EMPLEADO WHERE ID = ? AND ESTADO = ? AND ROL = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, id);
+            stmt.setLong(1, id);  // Cambiar a setLong
             stmt.setString(2, Empleado.ESTADO_ACTIVO);
             stmt.setString(3, Empleado.ROL_VENDEDOR);
 
@@ -110,28 +110,24 @@ public class GestorVendedor {
         }
     }
 
-    public void editarRegistro(String idSeleccionada, String idNueva, String nombreNuevo, double salarioNuevo) {
-        // Validaciones de longitud
-        if (idNueva.length() > 8) {
-            JOptionPane.showMessageDialog(null, "ID demasiado larga (Máx. 8 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+    public void editarRegistro(Long idSeleccionada, String nombreNuevo, double salarioNuevo) {
+        // Eliminar validación de ID
+
         if (nombreNuevo.length() > 15) {
             JOptionPane.showMessageDialog(null, "Nombre demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String sql = "UPDATE EMPLEADO SET ID = ?, USERNAME = ?, SALARIO = ? WHERE ID = ? AND ESTADO = ? AND ROL = ?";
+        String sql = "UPDATE EMPLEADO SET USERNAME = ?, SALARIO = ? WHERE ID = ? AND ESTADO = ? AND ROL = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, idNueva);
-            stmt.setString(2, nombreNuevo);
-            stmt.setDouble(3, salarioNuevo);
-            stmt.setString(4, idSeleccionada);
-            stmt.setString(5, Empleado.ESTADO_ACTIVO);
-            stmt.setString(6, Empleado.ROL_VENDEDOR);
+            stmt.setString(1, nombreNuevo);
+            stmt.setDouble(2, salarioNuevo);
+            stmt.setLong(3, idSeleccionada);  // Cambiar a setLong
+            stmt.setString(4, Empleado.ESTADO_ACTIVO);
+            stmt.setString(5, Empleado.ROL_VENDEDOR);
 
             int affectedRows = stmt.executeUpdate();
 
@@ -169,7 +165,7 @@ public class GestorVendedor {
     }
 
     public void subirDatosATabla(DefaultTableModel modelo) {
-        modelo.setRowCount(0); // Limpiar la tabla antes de cargar datos
+        modelo.setRowCount(0);
 
         String sql = "SELECT ID, USERNAME, SALARIO FROM EMPLEADO WHERE ESTADO = ? AND ROL = ?";
 
@@ -182,7 +178,7 @@ public class GestorVendedor {
 
             while (rs.next()) {
                 modelo.addRow(new Object[]{
-                        rs.getString("ID"),
+                        rs.getLong("ID"),  // Cambiar a getLong
                         rs.getString("USERNAME"),
                         rs.getDouble("SALARIO"),
                         "VENDEDOR"
@@ -205,7 +201,7 @@ public class GestorVendedor {
 
             while (rs.next()) {
                 Empleado empleado = new Empleado();
-                empleado.setId(rs.getString("ID"));
+                empleado.setId(rs.getLong("ID"));  // Cambiar a getLong
                 empleado.setUsername(rs.getString("USERNAME"));
                 empleado.setSalario(rs.getDouble("SALARIO"));
                 empleado.setEstado(rs.getString("ESTADO"));

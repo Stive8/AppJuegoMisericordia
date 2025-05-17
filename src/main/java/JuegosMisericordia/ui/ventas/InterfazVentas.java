@@ -518,7 +518,7 @@ public class InterfazVentas extends javax.swing.JFrame {
         venta.setFechaHora(LocalDateTime.now());
 
         Empleado vendedor = new Empleado();
-        vendedor.setId(this.loggedSeller);
+        vendedor.setId(Long.valueOf(this.loggedSeller));
         venta.setVendedor(vendedor);
 
         venta.setTipoPago(this.tipoPago);

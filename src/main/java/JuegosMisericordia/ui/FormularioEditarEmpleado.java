@@ -124,10 +124,10 @@ public class FormularioEditarEmpleado extends javax.swing.JFrame {
 
         if(rolElegido.equals("ADMINISTRADOR")){
             GestorAdministrador gestorAdmin = new GestorAdministrador();
-            gestorAdmin.editarRegistro(idSeleccionada, id, nombre, salario);
+            gestorAdmin.editarRegistro(Long.valueOf(idSeleccionada), nombre, salario);
         } else if (rolElegido.equals("VENDEDOR")) {
             GestorVendedor gestorVendedor = new GestorVendedor();
-            gestorVendedor.editarRegistro(idSeleccionada, id, nombre, salario);
+            gestorVendedor.editarRegistro(Long.valueOf(idSeleccionada),nombre, salario);
         }
 
         panelGestion.limpiarDatos();

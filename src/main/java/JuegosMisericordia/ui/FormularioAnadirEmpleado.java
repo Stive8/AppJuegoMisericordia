@@ -147,7 +147,7 @@ public class FormularioAnadirEmpleado extends javax.swing.JFrame {
     private void buttonAnadirVendedorActionPerformed(java.awt.event.ActionEvent evt) {
         GestorVendedor gestor = new GestorVendedor();
 
-        String nuevoID = idField.getText();
+        Long nuevoID = Long.valueOf(idField.getText());
         String nuevoNombre = nameField.getText();
         String nuevoPassword = passwordField.getText();
         double nuevoSalario = Double.parseDouble(salarioField.getText());
@@ -168,7 +168,7 @@ public class FormularioAnadirEmpleado extends javax.swing.JFrame {
     private void buttonAnadirAdminActionPerformed(java.awt.event.ActionEvent evt) {
         GestorAdministrador gestor = new GestorAdministrador();
 
-        String nuevoID = idField.getText();
+        Long nuevoID = Long.valueOf(idField.getText());
         String nuevoNombre = nameField.getText();
         String nuevoPassword = passwordField.getText();
         double nuevoSalario = Double.parseDouble(salarioField.getText());

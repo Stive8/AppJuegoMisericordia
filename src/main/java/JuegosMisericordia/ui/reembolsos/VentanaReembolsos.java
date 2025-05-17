@@ -105,7 +105,7 @@ public class VentanaReembolsos extends javax.swing.JFrame {
     }// </editor-fold>
 
 
-    
+
 
     private void mostrarFacturaCompleta(int numeroVenta) {
         Venta venta = gestorReembolsos.consultarVenta(numeroVenta);
