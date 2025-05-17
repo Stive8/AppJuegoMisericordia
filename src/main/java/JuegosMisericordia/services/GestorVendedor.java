@@ -5,11 +5,13 @@ import JuegosMisericordia.model.Empleado;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GestorVendedor {
 
     // Configuración de conexión a Oracle (usando las mismas credenciales que GestorProductos)
-    private static final String JDBC_URL = "jdbc:oracle:thin:@192.168.1.142:1521:XE";
+    private static final String JDBC_URL = GestorBaseDatos.IP_BASE_DATOS;
     private static final String USER = "DAE2024";
     private static final String PASSWORD = "DAE2024";
 
@@ -189,5 +191,31 @@ public class GestorVendedor {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<Empleado> obtenerTodosEmpleados() {
+        List<Empleado> empleados = new ArrayList<>();
+        String sql = "SELECT ID, USERNAME, SALARIO, ESTADO, ROL FROM EMPLEADO WHERE ESTADO = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, Empleado.ESTADO_ACTIVO);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Empleado empleado = new Empleado();
+                empleado.setId(rs.getString("ID"));
+                empleado.setUsername(rs.getString("USERNAME"));
+                empleado.setSalario(rs.getDouble("SALARIO"));
+                empleado.setEstado(rs.getString("ESTADO"));
+                empleado.setRol(rs.getString("ROL"));
+                empleados.add(empleado);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener empleados: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return empleados;
     }
 }

@@ -9,7 +9,7 @@ import java.sql.*;
 public class GestorClientes {
 
     // Configuración de conexión a Oracle (usando las mismas credenciales)
-    private static final String JDBC_URL = "jdbc:oracle:thin:@192.168.1.142:1521:XE";
+    private static final String JDBC_URL = GestorBaseDatos.IP_BASE_DATOS;
     private static final String USER = "DAE2024";
     private static final String PASSWORD = "DAE2024";
 
