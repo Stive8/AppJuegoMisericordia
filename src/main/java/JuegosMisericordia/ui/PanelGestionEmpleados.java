@@ -15,6 +15,7 @@ public class PanelGestionEmpleados extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setResizable(false);
+        this.setTitle("SIG - Juegos Misericordia V1.0 - Gestor de Empleados");
         modelo = new DefaultTableModel();
         modelo.addColumn("ID");
         modelo.addColumn("NOMBRE");

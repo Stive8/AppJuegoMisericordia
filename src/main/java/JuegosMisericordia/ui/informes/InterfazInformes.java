@@ -24,6 +24,7 @@ public class InterfazInformes extends JFrame {
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setResizable(false);
+        this.setTitle("SIG - Juegos Misericordia V1.0 - Generador de Informes");
     }
 
     @SuppressWarnings("unchecked")

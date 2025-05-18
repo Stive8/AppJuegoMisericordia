@@ -19,6 +19,7 @@ public class FormularioAnadirProducto extends javax.swing.JFrame {
 
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        this.setTitle("SIG - Juegos Misericordia V1.0 - Añadir Producto");
         this.setResizable(false);
 
         panelGestionInv = panelGestion;

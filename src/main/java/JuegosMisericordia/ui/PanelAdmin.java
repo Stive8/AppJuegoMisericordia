@@ -24,6 +24,7 @@ public class PanelAdmin extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setResizable(false);
+        this.setTitle("SIG - Juegos Misericordia V1.0 - Panel de Administrador");
     }
 
     /**

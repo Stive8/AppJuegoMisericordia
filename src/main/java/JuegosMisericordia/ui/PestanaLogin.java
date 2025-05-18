@@ -16,6 +16,7 @@ public class PestanaLogin extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        this.setTitle("SIG - Juegos Misericordia V1.0 - Ingreso");
     }
 
     /**

@@ -22,6 +22,7 @@ public class PanelVendedor extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        this.setTitle("SIG - Juegos Misericordia V1.0 - Panel de Vendedor");
 
         loggedVendedor = loggedVendedor1;
     }

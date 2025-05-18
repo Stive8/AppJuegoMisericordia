@@ -34,6 +34,7 @@ public class InterfazVentas extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        this.setTitle("SIG - Juegos Misericordia V1.0 - Gestor de Ventas");
 
         LocalDateTime myDateObj = LocalDateTime.now();
         DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
