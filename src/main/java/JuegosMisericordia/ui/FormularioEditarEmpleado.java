@@ -21,6 +21,7 @@ public class FormularioEditarEmpleado extends javax.swing.JFrame {
 
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         idSeleccionada = id;
         panelGestion = panel;

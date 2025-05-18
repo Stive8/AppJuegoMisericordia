@@ -23,6 +23,7 @@ public class PanelGestionInventario extends javax.swing.JFrame {
 
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         modelo = new DefaultTableModel();
         modelo.addColumn("CODIGO");
@@ -201,8 +202,6 @@ public class PanelGestionInventario extends javax.swing.JFrame {
 
     private void volverBtnActionPerformed(java.awt.event.ActionEvent evt) {
         PanelAdmin panelAdmin = new PanelAdmin();
-        panelAdmin.setVisible(true);
-        panelAdmin.setLocationRelativeTo(null);
         this.dispose();
     }
 

@@ -21,6 +21,7 @@ public class PanelVendedor extends javax.swing.JFrame {
 
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         loggedVendedor = loggedVendedor1;
     }

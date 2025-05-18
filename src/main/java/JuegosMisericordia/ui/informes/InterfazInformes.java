@@ -23,6 +23,7 @@ public class InterfazInformes extends JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+        this.setResizable(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -137,8 +138,6 @@ public class InterfazInformes extends JFrame {
 
     private void volverButtonActionPerformed(ActionEvent evt) {
         PanelAdmin panelAdmin = new PanelAdmin();
-        panelAdmin.setVisible(true);
-        panelAdmin.setLocationRelativeTo(null);
         this.dispose();
     }
 

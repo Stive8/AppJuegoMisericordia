@@ -15,6 +15,9 @@ public class VentanaLoginAdmin extends javax.swing.JFrame {
      */
     public VentanaLoginAdmin() {
         initComponents();
+        this.setVisible(true);
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
     }
 
     /**
@@ -113,8 +116,6 @@ public class VentanaLoginAdmin extends javax.swing.JFrame {
 
     private void volverButtonActionPerformed(java.awt.event.ActionEvent evt) {
         PestanaLogin pl = new PestanaLogin();
-        pl.setVisible(true);
-        pl.setLocationRelativeTo(null);
         this.dispose();
     }
 

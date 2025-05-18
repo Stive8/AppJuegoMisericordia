@@ -12,6 +12,9 @@ public class PanelGestionEmpleados extends javax.swing.JFrame {
     DefaultTableModel modelo;
     public PanelGestionEmpleados() {
         initComponents();
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+        this.setResizable(false);
         modelo = new DefaultTableModel();
         modelo.addColumn("ID");
         modelo.addColumn("NOMBRE");
@@ -274,8 +277,6 @@ public class PanelGestionEmpleados extends javax.swing.JFrame {
 
     private void volverButtonActionPerformed(java.awt.event.ActionEvent evt) {
         PanelAdmin panelAdmin = new PanelAdmin();
-        panelAdmin.setVisible(true);
-        panelAdmin.setLocationRelativeTo(null);
         this.dispose();
     }
 

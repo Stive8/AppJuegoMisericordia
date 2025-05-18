@@ -15,6 +15,7 @@ public class PestanaLogin extends javax.swing.JFrame {
         initComponents();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
     }
 
     /**

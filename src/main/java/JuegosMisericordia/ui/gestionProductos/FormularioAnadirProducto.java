@@ -19,6 +19,7 @@ public class FormularioAnadirProducto extends javax.swing.JFrame {
 
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
 
         panelGestionInv = panelGestion;
     }

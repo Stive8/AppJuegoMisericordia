@@ -13,6 +13,7 @@ public class FormularioAnadirEmpleado extends javax.swing.JFrame {
 
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
         panelGestion = panel;
     }
 
