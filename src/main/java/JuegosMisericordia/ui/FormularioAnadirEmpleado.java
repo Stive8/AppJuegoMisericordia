@@ -4,6 +4,8 @@ import JuegosMisericordia.services.GestorAdministrador;
 import JuegosMisericordia.services.GestorVendedor;
 import JuegosMisericordia.model.Empleado;
 
+import javax.swing.*;
+
 public class FormularioAnadirEmpleado extends javax.swing.JFrame {
     PanelGestionEmpleados panelGestion;
 
@@ -14,6 +16,8 @@ public class FormularioAnadirEmpleado extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        ImageIcon img = new ImageIcon(getClass().getResource("/icono/iconoBarraJFrame.png"));
+        this.setIconImage(img.getImage());
         this.setTitle("SIG - Juegos Misericordia V1.0 - Añadir Empleado");
         panelGestion = panel;
     }

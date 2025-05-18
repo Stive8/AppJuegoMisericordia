@@ -24,6 +24,8 @@ public class PanelGestionInventario extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        ImageIcon img = new ImageIcon(getClass().getResource("/icono/iconoBarraJFrame.png"));
+        this.setIconImage(img.getImage());
         this.setTitle("SIG - Juegos Misericordia V1.0 - Gestor de Inventario");
 
         modelo = new DefaultTableModel();

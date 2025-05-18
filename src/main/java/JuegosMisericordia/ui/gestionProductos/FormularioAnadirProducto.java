@@ -3,6 +3,8 @@ package JuegosMisericordia.ui.gestionProductos;
 import JuegosMisericordia.services.GestorProductos;
 import JuegosMisericordia.model.Producto;
 
+import javax.swing.*;
+
 /**
  *
  * @author Daniel
@@ -19,6 +21,8 @@ public class FormularioAnadirProducto extends javax.swing.JFrame {
 
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        ImageIcon img = new ImageIcon(getClass().getResource("/icono/iconoBarraJFrame.png"));
+        this.setIconImage(img.getImage());
         this.setTitle("SIG - Juegos Misericordia V1.0 - Añadir Producto");
         this.setResizable(false);
 

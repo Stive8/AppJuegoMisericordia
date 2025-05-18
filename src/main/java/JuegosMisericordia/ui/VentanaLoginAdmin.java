@@ -2,7 +2,7 @@ package JuegosMisericordia.ui;
 
 import JuegosMisericordia.services.GestorAdministrador;
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 /**
  *
@@ -18,6 +18,8 @@ public class VentanaLoginAdmin extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        ImageIcon img = new ImageIcon(getClass().getResource("/icono/iconoBarraJFrame.png"));
+        this.setIconImage(img.getImage());
         this.setTitle("SIG - Juegos Misericordia V1.0 - Ingreso Administradores");
     }
 
@@ -51,7 +53,8 @@ public class VentanaLoginAdmin extends javax.swing.JFrame {
         jLabel1.setBackground(new java.awt.Color(0, 0, 0));
         jLabel1.setFont(new java.awt.Font("Eras Demi ITC", 1, 34)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(0, 0, 0));
-        jLabel1.setText("Inicio de sesión administradores");
+        jLabel1.setText("Ingreso administradores");
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jPanel1.add(jLabel1);
         jLabel1.setBounds(20, 20, 550, 60);
 
@@ -81,7 +84,8 @@ public class VentanaLoginAdmin extends javax.swing.JFrame {
 
         jLabel2.setFont(new java.awt.Font("Dialog", 2, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel2.setText("Por favor ingrese sus credenciales");
+        jLabel2.setText("Digite sus credenciales");
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jPanel1.add(jLabel2);
         jLabel2.setBounds(150, 80, 280, 30);
         jPanel1.add(jPasswordField1);

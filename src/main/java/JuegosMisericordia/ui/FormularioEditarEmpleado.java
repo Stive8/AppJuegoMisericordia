@@ -3,6 +3,8 @@ package JuegosMisericordia.ui;
 import JuegosMisericordia.services.GestorAdministrador;
 import JuegosMisericordia.services.GestorVendedor;
 
+import javax.swing.*;
+
 /**
  * @author Daniel
  */
@@ -22,6 +24,8 @@ public class FormularioEditarEmpleado extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        ImageIcon img = new ImageIcon(getClass().getResource("/icono/iconoBarraJFrame.png"));
+        this.setIconImage(img.getImage());
         this.setTitle("SIG - Juegos Misericordia V1.0 - Editor de Empleados");
 
         idSeleccionada = id;

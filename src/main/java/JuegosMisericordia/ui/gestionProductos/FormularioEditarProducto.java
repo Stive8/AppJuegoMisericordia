@@ -6,6 +6,8 @@ package JuegosMisericordia.ui.gestionProductos;
 
 import JuegosMisericordia.services.GestorProductos;
 
+import javax.swing.*;
+
 /**
  *
  * @author Daniel
@@ -32,6 +34,8 @@ public class FormularioEditarProducto extends javax.swing.JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        ImageIcon img = new ImageIcon(getClass().getResource("/icono/iconoBarraJFrame.png"));
+        this.setIconImage(img.getImage());
         this.setTitle("SIG - Juegos Misericordia V1.0 - Edición de Productos");
     }
 
