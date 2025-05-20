@@ -29,6 +29,8 @@
 - Creación de una factura asociada a una venta al finalizarla.
 ### V. 0.7.4
 - Registro de detalles de una venta funcionando.
+- Solucionado el error que mostraba dos veces la información de un cliente en la generación de la factura.
+- Solucionado el error de registro de un cliente cuando había campos vacíos.
 ### V. 0.7.3
 - Registro de venta funcionando.
 ### V. 0.7.2
