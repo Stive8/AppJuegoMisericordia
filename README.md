@@ -7,6 +7,7 @@
 - ¡Primera release estable del sistema!
 ### V. 0.9.6
 - Arreglo de labels cortados en la UI.
+- Ícono de aplicación y nombre de cada pantalla añadidos.
 ### V. 0.9.5
 - Arreglado el error de formato en el informe de productos más vendidos.
 ### V. 0.9.4
