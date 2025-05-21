@@ -87,7 +87,7 @@ public class VentanaLoginAdmin extends javax.swing.JFrame {
         jLabel2.setText("Digite sus credenciales");
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jPanel1.add(jLabel2);
-        jLabel2.setBounds(150, 80, 280, 30);
+        jLabel2.setBounds(150, 80, 300, 30);
         jPanel1.add(jPasswordField1);
         jPasswordField1.setBounds(310, 220, 110, 30);
 

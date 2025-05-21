@@ -72,7 +72,7 @@ public class FormularioEditarProducto extends javax.swing.JFrame {
         jLabel1.setForeground(new java.awt.Color(0, 0, 0));
         jLabel1.setText("Edición de datos");
         jPanel1.add(jLabel1);
-        jLabel1.setBounds(210, 30, 192, 32);
+        jLabel1.setBounds(210, 30, 250, 32);
 
         jLabel2.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(0, 0, 0));
@@ -113,7 +113,7 @@ public class FormularioEditarProducto extends javax.swing.JFrame {
         jPanel1.add(cancelarBtn);
         cancelarBtn.setBounds(340, 335, 110, 30);
 
-        editarBtn.setText("Guardar cambios");
+        editarBtn.setText("Guardar");
         editarBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editarBtnActionPerformed(evt);

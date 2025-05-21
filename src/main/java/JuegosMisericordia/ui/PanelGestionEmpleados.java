@@ -53,12 +53,12 @@ public class PanelGestionEmpleados extends javax.swing.JFrame {
         setMinimumSize(new java.awt.Dimension(1000, 600));
         setPreferredSize(new java.awt.Dimension(1000, 600));
 
-        jPanel1.setBackground(new java.awt.Color(102, 102, 102));
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setMaximumSize(new java.awt.Dimension(1000, 600));
         jPanel1.setMinimumSize(new java.awt.Dimension(1000, 600));
         jPanel1.setPreferredSize(new java.awt.Dimension(1000, 600));
 
-        jPanel2.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
         volverButton.setText("Volver");
         volverButton.addActionListener(new java.awt.event.ActionListener() {

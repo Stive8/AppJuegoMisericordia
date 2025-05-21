@@ -64,7 +64,7 @@ public class VentanaLoginVendedor extends javax.swing.JFrame {
         jLabel2.setText("Digite sus credenciales");
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jPanel1.add(jLabel2);
-        jLabel2.setBounds(150, 80, 280, 30);
+        jLabel2.setBounds(150, 80, 300, 30);
 
         jLabel3.setFont(new java.awt.Font("Dialog", 1, 15)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(0, 0, 0));

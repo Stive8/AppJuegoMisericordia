@@ -1,6 +1,7 @@
 package JuegosMisericordia.ui.informes;
 
 import JuegosMisericordia.model.Empleado;
+import JuegosMisericordia.model.Producto;
 import JuegosMisericordia.model.Venta;
 import JuegosMisericordia.services.GestorVendedor;
 import JuegosMisericordia.services.GestorVentas;
@@ -12,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -146,6 +148,7 @@ public class InterfazInformes extends JFrame {
 
     private void productosMasVendidosButtonActionPerformed(ActionEvent evt) {
         GestorVentas gestorVentas = new GestorVentas();
+        jTextArea1.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
 
         // Encabezado del informe
         jTextArea1.setText("SISTEMA INTEGRADO DE GESTION - JUEGOS MISERICORDIA \n" +
@@ -198,6 +201,7 @@ public class InterfazInformes extends JFrame {
     private void deEmpleadosButtonActionPerformed(ActionEvent evt) {
         double nomina = 0;
         GestorVendedor gestor = new GestorVendedor();
+        jTextArea1.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
 
         // Encabezado Informe
         jTextArea1.setText("SISTEMA INTEGRADO DE GESTION - JUEGOS MISERICORDIA \n" +
@@ -231,7 +235,7 @@ public class InterfazInformes extends JFrame {
 
         // Imprimir Nómina
         informe.append("--------------------------------------- \n")
-                .append("NOMINA TOTAL DE LA EMPRE SA: \n")
+                .append("NOMINA TOTAL DE LA EMPRESA: \n")
                 .append(String.format("%,.2f", nomina)).append("$\n")
                 .append("--------------------------------------- \n")
                 .append("Total empleados activos: ").append(empleados.size()).append("\n");
@@ -283,6 +287,8 @@ public class InterfazInformes extends JFrame {
             JOptionPane.showMessageDialog(null, "Generación de informe cancelada", "Cancelación", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
+        jTextArea1.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
 
         // Validar que fecha fin no sea anterior a fecha inicio
         if (fechaFinValida.isBefore(fechaInicioValida)) {
@@ -341,37 +347,6 @@ public class InterfazInformes extends JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(InterfazInformes.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(InterfazInformes.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(InterfazInformes.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(InterfazInformes.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new InterfazInformes().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify
     private JButton deEmpleadosButton;
