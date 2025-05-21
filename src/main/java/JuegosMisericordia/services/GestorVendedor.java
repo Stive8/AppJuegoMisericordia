@@ -20,18 +20,27 @@ public class GestorVendedor {
     }
 
     public void addSeller(Empleado vendedor) {
-        String sql = "INSERT INTO EMPLEADO (USERNAME, PASSWORD, SALARIO, ESTADO, ROL) VALUES (?, ?, ?, ?, ?)";
+        // Validar si el username ya existe
+        if (usernameExists(vendedor.getUsername())) {
+            JOptionPane.showMessageDialog(null, "El nombre de usuario '" + vendedor.getUsername() + "' ya está en uso",
+                    "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String sql = "BEGIN INSERT INTO EMPLEADO (USERNAME, PASSWORD, SALARIO, ESTADO, ROL) VALUES (?, ?, ?, ?, ?) RETURNING ID INTO ?; END;";
 
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             CallableStatement stmt = conn.prepareCall(sql)) {
 
             // Validaciones de longitud (solo para username y password)
-            if(vendedor.getUsername().length() > 15) {
-                JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
+            if (vendedor.getUsername().length() > 15) {
+                JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)",
+                        "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            if(vendedor.getPassword().length() > 15) {
-                JOptionPane.showMessageDialog(null, "Contraseña demasiado larga (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
+            if (vendedor.getPassword().length() > 15) {
+                JOptionPane.showMessageDialog(null, "Contraseña demasiado larga (Máx. 15 caracteres)",
+                        "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -41,19 +50,42 @@ public class GestorVendedor {
             stmt.setString(4, Empleado.ESTADO_ACTIVO);
             stmt.setString(5, Empleado.ROL_VENDEDOR);
 
-            int affectedRows = stmt.executeUpdate();
+            // Registrar el parámetro de salida para el ID
+            stmt.registerOutParameter(6, Types.NUMERIC);
 
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        vendedor.setId(generatedKeys.getLong(1));
-                    }
-                }
-                JOptionPane.showMessageDialog(null, "Vendedor registrado exitosamente con ID: " + vendedor.getId(), null, JOptionPane.INFORMATION_MESSAGE);
+            stmt.execute();
+
+            // Obtener el ID generado
+            Long generatedId = stmt.getLong(6);
+            if (generatedId == null || generatedId == 0) {
+                throw new SQLException("No se generó un ID válido para el empleado");
             }
+            vendedor.setId(generatedId);
+            JOptionPane.showMessageDialog(null, "Vendedor registrado exitosamente con ID: " + vendedor.getId(),
+                    null, JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al registrar vendedor: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al registrar vendedor: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
             throw new RuntimeException(e);
+        }
+    }
+
+    // Método auxiliar para verificar si el username ya existe
+    private boolean usernameExists(String username) {
+        String sql = "SELECT COUNT(*) FROM EMPLEADO WHERE USERNAME = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al verificar username: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return true; // Asumir que existe en caso de error para evitar inserciones riesgosas
         }
     }
 

@@ -522,7 +522,15 @@ public class InterfazVentas extends javax.swing.JFrame {
         venta.setFechaHora(LocalDateTime.now());
 
         Empleado vendedor = new Empleado();
-        vendedor.setId(Long.valueOf(this.loggedSeller));
+        // Obtener el ID numérico del empleado a partir del username
+        String vendedorId = gestorVentas.obtenerIdEmpleadoPorUsername(this.loggedSeller);
+        if (vendedorId != null) {
+            vendedor.setId(Long.valueOf(vendedorId));
+        } else {
+            JOptionPane.showMessageDialog(null, "Error: No se encontró el vendedor con username " + this.loggedSeller,
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return; // Salir del método si no se encuentra el vendedor
+        }
         venta.setVendedor(vendedor);
 
         venta.setTipoPago(this.tipoPago);

@@ -147,12 +147,12 @@ public class FormularioAnadirEmpleado extends javax.swing.JFrame {
     private void buttonAnadirVendedorActionPerformed(java.awt.event.ActionEvent evt) {
         GestorVendedor gestor = new GestorVendedor();
 
-        Long nuevoID = 1L;
         String nuevoNombre = nameField.getText();
         String nuevoPassword = passwordField.getText();
         double nuevoSalario = Double.parseDouble(salarioField.getText());
 
-        Empleado vendedor = new Empleado(nuevoID, nuevoNombre, nuevoPassword, nuevoSalario, Empleado.ESTADO_ACTIVO, Empleado.ROL_VENDEDOR);
+        // Usar el constructor sin ID
+        Empleado vendedor = new Empleado(nuevoNombre, nuevoPassword, nuevoSalario, Empleado.ESTADO_ACTIVO, Empleado.ROL_VENDEDOR);
 
         gestor.addSeller(vendedor);
 

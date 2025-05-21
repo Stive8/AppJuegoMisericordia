@@ -46,19 +46,19 @@ public class GestorVentas {
     }
 
     private void guardarVenta(Connection conn, Venta venta) throws SQLException {
+        // Usar directamente el ID del vendedor desde el objeto venta
+        String empleadoId = String.valueOf(venta.getVendedor().getId());
 
-        String empleadoId = obtenerIdEmpleadoPorUsername(String.valueOf(venta.getVendedor().getId()));
-
-        String sql = "INSERT INTO VENTA (NUMERO_VENTA, FECHA_HORA, VENDEDOR_ID, TIPO_PAGO, MONTO_TOTAL, CAMBIO) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-
+        String sql = "INSERT INTO VENTA (NUMERO_VENTA, FECHA_HORA, VENDEDOR_ID, TIPO_PAGO, MONTO_TOTAL, CAMBIO, REEMBOLSADO) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, venta.getNumeroVenta());
             stmt.setTimestamp(2, Timestamp.valueOf(venta.getFechaHora()));
-            stmt.setString(3, empleadoId); // Usamos el ID obtenido
+            stmt.setString(3, empleadoId);
             stmt.setString(4, venta.getTipoPago());
             stmt.setDouble(5, venta.getMontoTotal());
             stmt.setDouble(6, venta.getCambio());
+            stmt.setString(7, venta.getReembolsado() != null ? venta.getReembolsado() : "NO");
 
             if (stmt.executeUpdate() == 0) {
                 throw new SQLException("No se pudo guardar la venta principal");
@@ -68,22 +68,21 @@ public class GestorVentas {
 
 
 
-    private String obtenerIdEmpleadoPorUsername(String username) {
+    public String obtenerIdEmpleadoPorUsername(String username) {
         String sql = "SELECT ID FROM EMPLEADO WHERE USERNAME = ? AND ESTADO = ?";
-
+        System.out.println("Buscando ID para username: " + username);
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, username);
             stmt.setString(2, Empleado.ESTADO_ACTIVO);
-
             ResultSet rs = stmt.executeQuery();
-
             if (rs.next()) {
-                return rs.getString("ID");
+                String id = rs.getString("ID");
+                System.out.println("ID encontrado: " + id);
+                return id;
             }
+            System.out.println("No se encontró ID para username: " + username);
             return null;
-
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al buscar empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return null;

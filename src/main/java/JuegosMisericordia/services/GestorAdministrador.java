@@ -20,40 +20,78 @@ public class GestorAdministrador {
     }
 
     public void addAdmin(Empleado administrador) {
-        String sql = "INSERT INTO EMPLEADO (USERNAME, PASSWORD, SALARIO, ESTADO, ROL) VALUES (?, ?, ?, ?, ?)";
+        // Validar si el username ya existe
+        if (usernameExists(administrador.getUsername())) {
+            JOptionPane.showMessageDialog(null, "El nombre de usuario '" + administrador.getUsername() + "' ya está en uso",
+                    "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String insertSql = "INSERT INTO EMPLEADO (USERNAME, PASSWORD, SALARIO, ESTADO, ROL) VALUES (?, ?, ?, ?, ?)";
+        String selectSql = "SELECT ID FROM EMPLEADO WHERE USERNAME = ?";
 
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+             PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
 
-            // Eliminar validación de ID
+            // Validaciones de longitud (solo para username y password)
             if (administrador.getUsername().length() > 15) {
-                JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Nombre de usuario demasiado largo (Máx. 15 caracteres)",
+                        "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             if (administrador.getPassword().length() > 15) {
-                JOptionPane.showMessageDialog(null, "Contraseña demasiado larga (Máx. 15 caracteres)", "Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Contraseña demasiado larga (Máx. 15 caracteres)",
+                        "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            stmt.setString(1, administrador.getUsername());
-            stmt.setString(2, administrador.getPassword());
-            stmt.setDouble(3, administrador.getSalario());
-            stmt.setString(4, Empleado.ESTADO_ACTIVO);
-            stmt.setString(5, Empleado.ROL_ADMINISTRADOR);
+            // Insertar el administrador
+            insertStmt.setString(1, administrador.getUsername());
+            insertStmt.setString(2, administrador.getPassword());
+            insertStmt.setDouble(3, administrador.getSalario());
+            insertStmt.setString(4, Empleado.ESTADO_ACTIVO);
+            insertStmt.setString(5, Empleado.ROL_ADMINISTRADOR);
 
-            int rowsInserted = stmt.executeUpdate();
+            int rowsInserted = insertStmt.executeUpdate();
 
             if (rowsInserted > 0) {
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        administrador.setId(generatedKeys.getLong(1));
+                // Consultar el ID generado usando el username
+                selectStmt.setString(1, administrador.getUsername());
+                try (ResultSet rs = selectStmt.executeQuery()) {
+                    if (rs.next()) {
+                        Long generatedId = rs.getLong("ID");
+                        administrador.setId(generatedId);
+                        JOptionPane.showMessageDialog(null, "Administrador registrado exitosamente con ID: " + administrador.getId(),
+                                null, JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        throw new SQLException("No se pudo obtener el ID del administrador recién insertado");
                     }
                 }
-                JOptionPane.showMessageDialog(null, "Administrador registrado exitosamente con ID: " + administrador.getId(), null, JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al registrar administrador: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al registrar administrador: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            throw new RuntimeException(e); // Cambiar a RuntimeException para mantener consistencia
+        }
+    }
+
+    // Método auxiliar para verificar si el username ya existe (asegúrate de que esté en GestorAdministrador)
+    private boolean usernameExists(String username) {
+        String sql = "SELECT COUNT(*) FROM EMPLEADO WHERE USERNAME = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al verificar username: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return true; // Asumir que existe en caso de error para evitar inserciones riesgosas
         }
     }
 
