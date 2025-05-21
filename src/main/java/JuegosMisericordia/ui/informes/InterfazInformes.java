@@ -29,6 +29,7 @@ public class InterfazInformes extends JFrame {
         ImageIcon img = new ImageIcon(getClass().getResource("/icono/iconoBarraJFrame.png"));
         this.setIconImage(img.getImage());
         this.setTitle("SIG - Juegos Misericordia V1.0 - Generador de Informes");
+        jTextArea1.setEditable(false);
     }
 
     @SuppressWarnings("unchecked")
