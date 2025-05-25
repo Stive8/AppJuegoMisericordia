@@ -195,8 +195,6 @@ public class GestorAdministrador {
     }
 
     public void subirDatosATabla(DefaultTableModel modelo) {
-        modelo.setRowCount(0);
-
         String sql = "SELECT id, username, salario FROM EMPLEADO WHERE estado = ? AND rol = ?";
 
         try (Connection conn = getConnection();

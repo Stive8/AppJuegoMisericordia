@@ -199,12 +199,19 @@ public class PanelGestionEmpleados extends javax.swing.JFrame {
         pack();
     }// </editor-fold>
 
-    public void mostrarDatos(){
+    public void mostrarDatos() {
+        // Limpiar el modelo una sola vez al inicio
+        modelo.setRowCount(0);
+
+        // Cargar administradores
         GestorAdministrador gestorAdministrador = new GestorAdministrador();
         gestorAdministrador.subirDatosATabla(modelo);
+
+        // Cargar vendedores
         GestorVendedor gestorVendedor = new GestorVendedor();
         gestorVendedor.subirDatosATabla(modelo);
 
+        // Asignar el modelo actualizado a la tabla
         jTableEmpleados.setModel(modelo);
     }
 
